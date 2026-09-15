@@ -25,16 +25,24 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
     }
 
     @Override
-    public Message<?> preSend (Message<?> message, MessageChannel channel) {
+    public Message<?> preSend(Message<?> message, MessageChannel channel) {
 
-        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
+        StompHeaderAccessor accessor =
+                StompHeaderAccessor.wrap(message);
+
+        System.out.println("STOMP COMMAND: " + accessor.getCommand());
+        System.out.println(
+                "AUTH HEADER: " +
+                        accessor.getFirstNativeHeader("Authorization")
+        );
 
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
 
             String authorization =
                     accessor.getFirstNativeHeader("Authorization");
 
-            if (authorization == null || !authorization.startsWith("Bearer ")) {
+            if (authorization == null ||
+                    !authorization.startsWith("Bearer ")) {
 
                 throw new IllegalArgumentException(
                         "Missing or invalid Authorization header"
@@ -45,9 +53,11 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
 
             String username = jwtHelper.extraUsername(token);
 
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            UserDetails userDetails =
+                    userDetailsService.loadUserByUsername(username);
 
-            boolean isTokenValid = jwtHelper.isTokenValid(token, userDetails);
+            boolean isTokenValid =
+                    jwtHelper.isTokenValid(token, userDetails);
 
             if (!isTokenValid) {
                 throw new IllegalArgumentException(
@@ -55,7 +65,8 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
                 );
             }
 
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,
                             userDetails.getAuthorities()

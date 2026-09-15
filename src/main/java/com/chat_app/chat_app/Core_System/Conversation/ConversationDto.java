@@ -16,7 +16,10 @@ public class ConversationDto {
 
     public record ConversationResponse (
             UUID id,
+            String name,
             LocalDateTime createdAt,
-            LocalDateTime updatedAt
+            LocalDateTime updatedAt,
+            int unreadCount,
+            String lastMessage
     ) {}
 }

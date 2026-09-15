@@ -31,8 +31,8 @@ public class UserController {
     }
 
     @PostMapping("/sigh-up")
-    public ResponseEntity<GlobalResponse<UserDto.AuthResponse>> SighUp (@RequestBody @Valid UserDto.CreateUser createUser){
-        UserDto.AuthResponse response = userService.createUser(createUser);
+    public ResponseEntity<GlobalResponse<UserDto.CreateAccountResponse>> SighUp (@RequestBody @Valid UserDto.CreateUser createUser){
+        UserDto.CreateAccountResponse response = userService.createUser(createUser);
         return new ResponseEntity<>(new GlobalResponse<>(response), HttpStatus.OK);
     }
 
@@ -41,7 +41,6 @@ public class UserController {
         UserDto.AuthResponse response = userService.sighIn(sighIn);
         return new ResponseEntity<>(new GlobalResponse<>(response), HttpStatus.OK);
     }
-
 
     @PutMapping("/update-user/{userId}")
     public ResponseEntity<GlobalResponse<String>> updateUser(@PathVariable @Valid UUID userId, @RequestBody @Valid UserDto.UpdateUser updateUser){
@@ -53,5 +52,29 @@ public class UserController {
     public ResponseEntity<GlobalResponse<String>> deleteUserById(@PathVariable UUID userId){
         userService.deleteUser(userId);
         return new ResponseEntity<>(new GlobalResponse<>("User deleted successfully!"), HttpStatus.OK);
+    }
+
+    @GetMapping("/search-by-username/{username}/{currentUsername}")
+    public ResponseEntity<GlobalResponse<List<UserDto.SearchResponse>>> searchByUsername (@PathVariable String username, @PathVariable String currentUsername) {
+        List<UserDto.SearchResponse> users = userService.searchByNameOrUsername(username, currentUsername);
+        return new ResponseEntity<>(new GlobalResponse<>(users), HttpStatus.OK);
+    }
+
+    @GetMapping("/get-user-chat-info/{conversationId}/{userId}")
+    public ResponseEntity<GlobalResponse<UserDto.UserChatInfoResponse>> userChatInfo (@PathVariable UUID conversationId, @PathVariable UUID userId) {
+        UserDto.UserChatInfoResponse userChatInfo = userService.userChatInfo(conversationId, userId);
+        return new ResponseEntity<>(new GlobalResponse<>(userChatInfo), HttpStatus.OK);
+    }
+
+    @PostMapping("/confirmation-code/{userId}")
+    public ResponseEntity<GlobalResponse<UserDto.AuthResponse>> confirmationCode (@PathVariable UUID userId, @RequestBody UserDto.ConfirmationCode confirmationCode) {
+        UserDto.AuthResponse response = userService.verifyEmailCode(userId, confirmationCode);
+        return new ResponseEntity<>(new GlobalResponse<>(response), HttpStatus.OK);
+    }
+
+    @PutMapping("/resend-confirmation-code/{userId}")
+    public ResponseEntity<GlobalResponse<String>> resendConfirmationCode (@PathVariable UUID userId) {
+        userService.resendConfirmationCode(userId);
+        return new ResponseEntity<>(new GlobalResponse<>("تم ارسال الكود بنجاح!"), HttpStatus.OK);
     }
 }

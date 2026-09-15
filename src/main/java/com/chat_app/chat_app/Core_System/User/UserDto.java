@@ -2,6 +2,8 @@ package com.chat_app.chat_app.Core_System.User;
 
 import jakarta.validation.constraints.NotBlank;
 
+import java.util.UUID;
+
 public class UserDto {
 
     public record CreateUser (
@@ -30,7 +32,27 @@ public class UserDto {
     ) {}
 
     public record AuthResponse (
+            UUID id,
             String token,
             String message
+    ) {}
+
+    public record SearchResponse (
+            UUID id,
+            String name,
+            String username
+    ) {}
+
+    public record UserChatInfoResponse (
+            String name,
+            String username
+    ) {}
+
+    public record ConfirmationCode (
+            String code
+    ) {}
+
+    public record CreateAccountResponse (
+            UUID id
     ) {}
 }

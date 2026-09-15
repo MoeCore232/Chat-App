@@ -1,15 +1,19 @@
 package com.chat_app.chat_app.Core_System.User;
 
+import com.chat_app.chat_app.Core_System.ConfermationCode.ConfirmationCode;
+import com.chat_app.chat_app.Core_System.ConfermationCode.ConfirmationCodeRepo;
 import com.chat_app.chat_app.Shared.Config.JwtHelper;
 import com.chat_app.chat_app.Shared.ErrorHandling.CustomResponseException;
+import com.chat_app.chat_app.Shared.SendMail.SendEmailService;
+import com.chat_app.chat_app.Shared.Utils.GenerateRandomCode;
 import jakarta.transaction.Transactional;
-import org.aspectj.apache.bcel.classfile.Module;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,6 +33,15 @@ public class UserService {
     @Autowired
     private JwtHelper jwtHelper;
 
+    @Autowired
+    private ConfirmationCodeRepo confirmationCodeRepo;
+
+    @Autowired
+    private GenerateRandomCode generateRandomCode;
+
+    @Autowired
+    private SendEmailService sendEmailService;
+
     public List<User> getAllUsers () {
         return userRepo.findAll();
     }
@@ -40,25 +53,43 @@ public class UserService {
     }
 
     @Transactional
-    public UserDto.AuthResponse createUser (UserDto.CreateUser createUser) {
+    public UserDto.CreateAccountResponse createUser (UserDto.CreateUser createUser) {
 
         Optional<User> isUsernameFound = userRepo.findByUsername(createUser.username());
+
         if (isUsernameFound.isPresent()) {
-            throw CustomResponseException.duplicateItem("username");
+            throw CustomResponseException.duplicateItem("اسم المستخدم");
         }
 
         Optional<User> isEmailFound = userRepo.findByEmail(createUser.email());
+
         if (isEmailFound.isPresent()) {
-            throw CustomResponseException.duplicateItem("email");
+            throw CustomResponseException.duplicateItem("البريد الالكتروني");
         }
 
-        String password = passwordEncoder.encode(createUser.password());
-        User user = User.createUser(createUser, password);
+        try {
+            String password = passwordEncoder.encode(createUser.password());
 
-        String token = jwtHelper.generateToken(user);
-        userRepo.save(user);
+            User user = User.createUser(createUser, password);
 
-        return new UserDto.AuthResponse(token, "User created successful!");
+            userRepo.save(user);
+
+            String code = generateRandomCode.generateRandomCode();
+
+            System.out.println("Code wen sent: " + code);
+
+            ConfirmationCode confirmationCode = ConfirmationCode.create(user, code);
+
+            confirmationCodeRepo.save(confirmationCode);
+
+            sendEmailService.confirmationMessage(user.getEmail(), code);
+
+            return new UserDto.CreateAccountResponse(user.getId());
+        } catch (MatchException e) {
+            e.printStackTrace();
+            System.out.println(e);
+            throw e;
+        }
     }
 
     @Transactional
@@ -72,20 +103,91 @@ public class UserService {
         User findUser = userRepo.findByUsername(sighIn.username())
                 .orElseThrow(() -> CustomResponseException.badCredentials());
 
+        sendEmailService.welcomeMessage(findUser.getEmail());
+
         String token = jwtHelper.generateToken(findUser);
-        return new UserDto.AuthResponse(token, "Login Successful!");
+        return new UserDto.AuthResponse(findUser.getId(), token, "Login Successful!");
     }
 
     public void updateUser (UUID userId, UserDto.UpdateUser updateUser) {
         User findUser = userRepo.findById(userId)
                 .orElseThrow(() -> CustomResponseException.idIsNotFound(userId));
+
         User user = User.updateUser(findUser, updateUser);
+
         userRepo.save(user);
     }
 
     public void deleteUser (UUID userId) {
         User findUser = userRepo.findById(userId)
                 .orElseThrow(()-> CustomResponseException.idIsNotFound(userId));
+
         userRepo.deleteById(findUser.getId());
+    }
+
+    public List<UserDto.SearchResponse> searchByNameOrUsername (String username, String currentUsername) {
+        return userRepo.findByUsernameContainingIgnoreCaseAndUsernameNot(username, currentUsername)
+                .stream()
+                .map(user -> new UserDto.SearchResponse(
+                        user.getId(),
+                        user.getName(),
+                        user.getUsername()
+                )).toList();
+    }
+
+    public UserDto.UserChatInfoResponse userChatInfo (UUID conversationId, UUID userId) {
+        User findUser = userRepo.findOtherUser(conversationId, userId)
+                .orElseThrow(() -> CustomResponseException.idIsNotFound(userId));
+
+        return new UserDto.UserChatInfoResponse(findUser.getName(), findUser.getUsername());
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public UserDto.AuthResponse verifyEmailCode (UUID userId, UserDto.ConfirmationCode confirmationCodeDto) {
+
+        Optional<ConfirmationCode> findConfirmationCode = confirmationCodeRepo.findByUserId(
+                userId
+        );
+
+        if (findConfirmationCode.isEmpty()) {
+            throw CustomResponseException.idIsNotFound(userId);
+        }
+
+        ConfirmationCode confirmationCode = findConfirmationCode.get();
+
+        if (!confirmationCodeDto.code().equals(confirmationCode.getCode())) {
+            throw CustomResponseException.incorrectCode();
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+
+        if (!now.isBefore(confirmationCode.getExpiredAt())) {
+            throw CustomResponseException.expiredCode();
+        }
+
+        User findUser = userRepo.findById(userId)
+                .orElseThrow(() -> CustomResponseException.idIsNotFound(userId));
+
+        String token = jwtHelper.generateToken(findUser);
+
+        confirmationCodeRepo.deleteById(confirmationCode.getId());
+
+        return new UserDto.AuthResponse(findUser.getId(), token, "Account created Successful!");
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void resendConfirmationCode (UUID userId) {
+
+        ConfirmationCode findConfirmationCode = confirmationCodeRepo.findByUserId(userId)
+                .orElseThrow(() -> CustomResponseException.idIsNotFound(userId));
+
+        String code = generateRandomCode.generateRandomCode();
+
+        System.out.println("Old code we got: " + findConfirmationCode.getCode());
+        System.out.println("Code we resend: " + code);
+
+        findConfirmationCode.resendCode(code);
+
+        confirmationCodeRepo.save(findConfirmationCode);
     }
 }

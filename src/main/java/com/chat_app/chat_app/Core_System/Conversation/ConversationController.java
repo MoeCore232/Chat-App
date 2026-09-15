@@ -6,12 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/api/conversation")
@@ -20,9 +18,9 @@ public class ConversationController {
     @Autowired
     private ConversationService conversationService;
 
-    @GetMapping("/get-all-conversations")
-    public ResponseEntity<GlobalResponse<List<ConversationDto.ConversationResponse>>> getAllConversations () {
-        List<ConversationDto.ConversationResponse> conversations = conversationService.getAllConversation();
+    @GetMapping("/get-all-user-conversations/{userId}")
+    public ResponseEntity<GlobalResponse<List<ConversationDto.ConversationResponse>>> getAllUserConversations (@PathVariable UUID userId) {
+        List<ConversationDto.ConversationResponse> conversations = conversationService.getAllUserConversations(userId);
         return new ResponseEntity<>(new GlobalResponse<>(conversations), HttpStatus.OK);
     }
 
@@ -30,5 +28,11 @@ public class ConversationController {
     public ResponseEntity<GlobalResponse<ConversationDto.ConversationResponse>> createConversations (@RequestBody @Valid ConversationDto.CreateConversation createConversation) {
         ConversationDto.ConversationResponse response = conversationService.createConversation(createConversation);
         return new ResponseEntity<>(new GlobalResponse<>(response), HttpStatus.OK);
+    }
+
+    @PutMapping("/mark-as-read/{conversationId}/{userId}")
+    public ResponseEntity<?> markAsRead (@PathVariable UUID conversationId, @PathVariable UUID userId) {
+        conversationService.markConversationAsRead(conversationId, userId);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

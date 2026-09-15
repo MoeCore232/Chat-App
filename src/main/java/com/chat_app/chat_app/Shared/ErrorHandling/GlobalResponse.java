@@ -14,7 +14,7 @@ public class GlobalResponse<T> {
     private T data;
     private List<ErrorItem> errorItems;
 
-    public record ErrorItem (String message) {}
+    public record ErrorItem (String message) { }
 
     public GlobalResponse (T data) {
         this.status = SUCCESSFUL;

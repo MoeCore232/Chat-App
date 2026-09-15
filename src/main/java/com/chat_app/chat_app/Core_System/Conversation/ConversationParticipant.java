@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.validator.constraints.br.CPF;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -33,8 +34,10 @@ public class ConversationParticipant {
     @Column(name = "joined_at", nullable = false, updatable = false)
     private LocalDateTime joinedAt;
 
-    protected ConversationParticipant () {
+    @Column(name = "unread-count", nullable = false)
+    private int unreadCount = 0;
 
+    protected ConversationParticipant () {
     }
 
     private ConversationParticipant (Conversation conversation, User user) {
@@ -45,4 +48,6 @@ public class ConversationParticipant {
     public static ConversationParticipant create (Conversation conversation, User user) {
         return new ConversationParticipant(conversation, user);
     }
+
+    public void setUnreadCount (int unreadCount) {this.unreadCount = unreadCount;}
 }

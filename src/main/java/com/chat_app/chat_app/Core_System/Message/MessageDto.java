@@ -20,6 +20,7 @@ public class MessageDto {
     public record MessageResponse (
             UUID id,
             UUID senderId,
+            String senderName,
             String content,
             LocalDateTime createdAt
     ) {}

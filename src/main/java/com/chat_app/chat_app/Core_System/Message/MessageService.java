@@ -40,34 +40,70 @@ public class MessageService {
                .map(message -> new MessageDto.MessageResponse(
                        message.getId(),
                        message.getSender().getId(),
+                       message.getSender().getName(),
                        message.getContent(),
                        message.getCreatedAt()
                )).toList();
     }
 
-    public MessageDto.MessageResponse createMessage (MessageDto.CreateMessage createMessage) {
-        Conversation findConversion = conversationRepo.findById(createMessage.conversationId())
-                .orElseThrow(() -> CustomResponseException.idIsNotFound(createMessage.conversationId()));
+    public MessageDto.MessageResponse createMessage(
+            MessageDto.CreateMessage createMessage
+    ) {
 
-        User findUser = userRepo.findById(createMessage.senderId())
-                .orElseThrow(() -> CustomResponseException.idIsNotFound(createMessage.senderId()));
+        Conversation findConversion = conversationRepo.findById(
+                        createMessage.conversationId()
+                )
+                .orElseThrow(() ->
+                        CustomResponseException.idIsNotFound(
+                                createMessage.conversationId()
+                        )
+                );
 
-        boolean isParticipant = conversationParticipantRepo.existsByConversationIdAndUserId(
-                findConversion.getId(),
-                findUser.getId()
-        );
+        User findUser = userRepo.findById(
+                        createMessage.senderId()
+                )
+                .orElseThrow(() ->
+                        CustomResponseException.idIsNotFound(
+                                createMessage.senderId()
+                        )
+                );
+
+        boolean isParticipant =
+                conversationParticipantRepo.existsByConversationIdAndUserId(
+                        findConversion.getId(),
+                        findUser.getId()
+                );
 
         if (!isParticipant) {
             throw CustomResponseException.userIsNotParticipant();
         }
 
-        Message message = Message.create(findConversion, findUser, createMessage.content());
+        Message message = Message.create(
+                findConversion,
+                findUser,
+                createMessage.content()
+        );
 
         Message savedMessage = messageRepo.save(message);
+
+        conversationParticipantRepo
+                .findOtherParticipant(
+                        findConversion.getId(),
+                        findUser.getId()
+                )
+                .ifPresent(participant -> {
+
+                    participant.setUnreadCount(
+                            participant.getUnreadCount() + 1
+                    );
+
+                    conversationParticipantRepo.save(participant);
+                });
 
         return new MessageDto.MessageResponse(
                 savedMessage.getId(),
                 savedMessage.getSender().getId(),
+                findUser.getName(),
                 savedMessage.getContent(),
                 savedMessage.getCreatedAt()
         );
