@@ -47,10 +47,10 @@ public class SecurityConfig {
                 .cors(c -> c.configurationSource(corsConfigurationSource()))
                 .csrf(c -> c.disable())
                 .authorizeHttpRequests(auth -> { auth.requestMatchers(
-                            "/api/user/sigh-up",
-                            "/api/user/sigh-in",
-                            "/api/user/confirmation-code/{userId}",
-                            "/api/user/resend-confirmation-code/{userId}"
+                        "/api/user/sigh-up",
+                        "/api/user/sigh-in",
+                        "/api/user/confirmation-code/{userId}",
+                        "/api/user/resend-confirmation-code/{userId}"
                         ).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
@@ -61,6 +61,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/user/delete-user/{userId}").hasAnyRole(ADMIN, USER)
                         .requestMatchers(HttpMethod.GET, "/api/user/search-by-username/{username}/{currentUsername}").hasAnyRole(ADMIN, USER)
                         .requestMatchers(HttpMethod.GET, "/api/user/get-user-chat-info/{conversationId}/{userId}").hasAnyRole(ADMIN, USER)
+                        .requestMatchers(HttpMethod.PUT, "/api/user/save-expo-push-token/{userId}").hasAnyRole(ADMIN, USER)
 
                         // Conversation
                         .requestMatchers(HttpMethod.GET, "/api/conversation/get-all-conversations").hasRole(ADMIN)
@@ -111,3 +112,7 @@ public class SecurityConfig {
         return source;
     }
 }
+
+
+
+

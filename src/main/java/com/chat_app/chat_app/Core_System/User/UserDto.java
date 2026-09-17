@@ -55,4 +55,8 @@ public class UserDto {
     public record CreateAccountResponse (
             UUID id
     ) {}
+
+    public record ExpoPushTokenRequest (
+            String token
+    ) {}
 }

@@ -9,10 +9,8 @@ public class GenerateRandomCode {
 
     public String generateRandomCode () {
         SecureRandom secureRandom = new SecureRandom();
-
         int code = secureRandom.nextInt(900_000) + 100_000;
 
         return String.valueOf(code);
     }
-
 }

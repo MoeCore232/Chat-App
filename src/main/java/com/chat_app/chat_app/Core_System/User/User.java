@@ -50,8 +50,11 @@ public class User implements UserDetails {
     @Column(name = "role", nullable = false)
     private Roles role;
 
+    @Column(name = "expo_push_token")
+    private String expoPushToken;
+
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = true)
     private LocalDateTime createdAt;
 
     public static User createUser (UserDto.CreateUser createUser, String password) {
@@ -68,5 +71,9 @@ public class User implements UserDetails {
         user.name = updateUser.name();
         user.username = updateUser.username();
         return user;
+    }
+
+    public void setExpoPushToken (String expoPushToken) {
+        this.expoPushToken = expoPushToken;
     }
 }

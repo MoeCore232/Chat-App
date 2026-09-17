@@ -1,4 +1,4 @@
-package com.chat_app.chat_app.Shared.SendMail;
+package com.chat_app.chat_app.Shared.Notifications;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;

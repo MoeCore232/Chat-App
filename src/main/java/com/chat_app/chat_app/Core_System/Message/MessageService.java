@@ -6,6 +6,7 @@ import com.chat_app.chat_app.Core_System.Conversation.ConversationRepo;
 import com.chat_app.chat_app.Core_System.User.User;
 import com.chat_app.chat_app.Core_System.User.UserRepo;
 import com.chat_app.chat_app.Shared.ErrorHandling.CustomResponseException;
+import com.chat_app.chat_app.Shared.Notifications.NotificationsService;
 import org.hibernate.query.sqm.tree.expression.Conversion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,9 @@ public class MessageService {
     @Autowired
     private ConversationParticipantRepo conversationParticipantRepo;
 
+    @Autowired
+    private NotificationsService notificationService;
+
 
     public List<MessageDto.MessageResponse> getAllMessages (UUID conversationId) {
 
@@ -46,9 +50,7 @@ public class MessageService {
                )).toList();
     }
 
-    public MessageDto.MessageResponse createMessage(
-            MessageDto.CreateMessage createMessage
-    ) {
+    public MessageDto.MessageResponse createMessage(MessageDto.CreateMessage createMessage) {
 
         Conversation findConversion = conversationRepo.findById(
                         createMessage.conversationId()
@@ -98,6 +100,18 @@ public class MessageService {
                     );
 
                     conversationParticipantRepo.save(participant);
+
+                    String expoPushToken =
+                            participant.getUser().getExpoPushToken();
+
+                    if (expoPushToken != null && !expoPushToken.isBlank()) {
+
+                        notificationService.sendNotification(
+                                expoPushToken,
+                                findUser.getName(),
+                                savedMessage.getContent()
+                        );
+                    }
                 });
 
         return new MessageDto.MessageResponse(

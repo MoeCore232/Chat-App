@@ -1,5 +1,6 @@
 package com.chat_app.chat_app.Core_System.Conversation;
 
+import org.aspectj.apache.bcel.classfile.Module;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -42,4 +43,6 @@ public interface ConversationParticipantRepo extends JpaRepository<ConversationP
             UUID conversationId,
             UUID userId
     );
+
+    List<ConversationParticipant> findByConversationId (UUID conversationId);
 }

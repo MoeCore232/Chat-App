@@ -4,7 +4,7 @@ import com.chat_app.chat_app.Core_System.ConfermationCode.ConfirmationCode;
 import com.chat_app.chat_app.Core_System.ConfermationCode.ConfirmationCodeRepo;
 import com.chat_app.chat_app.Shared.Config.JwtHelper;
 import com.chat_app.chat_app.Shared.ErrorHandling.CustomResponseException;
-import com.chat_app.chat_app.Shared.SendMail.SendEmailService;
+import com.chat_app.chat_app.Shared.Notifications.SendEmailService;
 import com.chat_app.chat_app.Shared.Utils.GenerateRandomCode;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +49,7 @@ public class UserService {
     public User getUserById (UUID userId) {
         User findUser = userRepo.findById(userId)
                 .orElseThrow(() -> CustomResponseException.idIsNotFound(userId));
+
         return findUser;
     }
 
@@ -82,7 +83,7 @@ public class UserService {
 
             confirmationCodeRepo.save(confirmationCode);
 
-            sendEmailService.confirmationMessage(user.getEmail(), code);
+            //sendEmailService.confirmationMessage(user.getEmail(), code);
 
             return new UserDto.CreateAccountResponse(user.getId());
         } catch (MatchException e) {
@@ -103,9 +104,10 @@ public class UserService {
         User findUser = userRepo.findByUsername(sighIn.username())
                 .orElseThrow(() -> CustomResponseException.badCredentials());
 
-        sendEmailService.welcomeMessage(findUser.getEmail());
+        //sendEmailService.welcomeMessage(findUser.getEmail());
 
         String token = jwtHelper.generateToken(findUser);
+
         return new UserDto.AuthResponse(findUser.getId(), token, "Login Successful!");
     }
 
@@ -189,5 +191,14 @@ public class UserService {
         findConfirmationCode.resendCode(code);
 
         confirmationCodeRepo.save(findConfirmationCode);
+    }
+
+    public void saveExpoPushToken (UUID userId, String token) {
+        User findUser = userRepo.findById(userId)
+                .orElseThrow(() -> CustomResponseException.idIsNotFound(userId));
+
+        findUser.setExpoPushToken(token);
+
+        userRepo.save(findUser);
     }
 }

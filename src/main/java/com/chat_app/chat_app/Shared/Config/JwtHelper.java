@@ -23,8 +23,8 @@ public class JwtHelper {
                 .builder()
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 14))
                 .signWith(getSighInKey())
+                .expiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 365 * 100)) // 14 يوم
                 .compact();
     }
 
@@ -42,21 +42,17 @@ public class JwtHelper {
                 .getPayload();
     }
 
-    public boolean isTokenExpired(String token){
-        return extraAllClaims(token)
-                .getExpiration()
-                .before(new Date());
-    }
 
     public boolean isTokenValid(String token, UserDetails userDetails){
         final String username = extraUsername(token);
         boolean usernameMatch = Objects.equals(username, userDetails.getUsername());
 
-        return usernameMatch && !isTokenExpired(token);
+        return usernameMatch;
     }
 
     private SecretKey getSighInKey(){
         byte[] keyBytes = Decoders.BASE64.decode(JWT_SECRET);
+
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }

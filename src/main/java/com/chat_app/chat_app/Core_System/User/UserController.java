@@ -77,4 +77,10 @@ public class UserController {
         userService.resendConfirmationCode(userId);
         return new ResponseEntity<>(new GlobalResponse<>("تم ارسال الكود بنجاح!"), HttpStatus.OK);
     }
+
+    @PutMapping("/save-expo-push-token/{userId}")
+    public ResponseEntity<?> saveExpoPushToken (@PathVariable UUID userId, @RequestBody UserDto.ExpoPushTokenRequest expoPushTokenRequest) {
+        userService.saveExpoPushToken(userId, expoPushTokenRequest.token());
+        return new ResponseEntity<>("Expo push token saved successful!", HttpStatus.OK);
+    }
 }
