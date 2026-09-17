@@ -1,5 +1,6 @@
 package com.chat_app.chat_app.Core_System.User;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 import java.util.UUID;
@@ -11,7 +12,7 @@ public class UserDto {
             String name,
             @NotBlank(message = "is required")
             String username,
-            @NotBlank(message = "is required")
+            @Email(message = "is required")
             String email,
             @NotBlank(message = "is required")
             String password
