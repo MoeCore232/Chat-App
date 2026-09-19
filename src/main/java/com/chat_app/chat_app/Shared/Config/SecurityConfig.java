@@ -47,6 +47,7 @@ public class SecurityConfig {
                 .cors(c -> c.configurationSource(corsConfigurationSource()))
                 .csrf(c -> c.disable())
                 .authorizeHttpRequests(auth -> { auth.requestMatchers(
+                        "/",
                         "/api/user/sigh-up",
                         "/api/user/sigh-in",
                         "/api/user/confirmation-code/{userId}",
