@@ -56,6 +56,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         // User
+                        .requestMatchers(HttpMethod.POST, "/api/user/sigh-up").hasAnyRole(ADMIN, USER)
+                        .requestMatchers(HttpMethod.POST, "/api/user/sigh-in").hasAnyRole(ADMIN, USER)
                         .requestMatchers(HttpMethod.GET, "/api/user/get-all-users").hasRole(ADMIN)
                         .requestMatchers(HttpMethod.GET, "/api/user/get-user-by-id/{employeeId}").hasRole(ADMIN)
                         .requestMatchers(HttpMethod.PUT, "/api/user/update-user").hasAnyRole(ADMIN, USER)
@@ -63,6 +65,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/user/search-by-username/{username}/{currentUsername}").hasAnyRole(ADMIN, USER)
                         .requestMatchers(HttpMethod.GET, "/api/user/get-user-chat-info/{conversationId}/{userId}").hasAnyRole(ADMIN, USER)
                         .requestMatchers(HttpMethod.PUT, "/api/user/save-expo-push-token/{userId}").hasAnyRole(ADMIN, USER)
+                        .requestMatchers(HttpMethod.POST, "/api/user/confirmation-code/{userId}").hasAnyRole(ADMIN, USER)
+                        .requestMatchers(HttpMethod.PUT, "/api/user/resend-confirmation-code/{userId}").hasAnyRole(ADMIN, USER)
 
                         // Conversation
                         .requestMatchers(HttpMethod.GET, "/api/conversation/get-all-conversations").hasRole(ADMIN)
