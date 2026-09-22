@@ -87,7 +87,7 @@ public class UserService {
 
             confirmationCodeRepo.save(confirmationCode);
 
-            sendEmailService.confirmationMessage(user.getEmail(), code);
+            //sendEmailService.confirmationMessage(user.getEmail(), code);
 
             return new UserDto.CreateAccountResponse(user.getId());
         } catch (MatchException e) {
@@ -108,7 +108,7 @@ public class UserService {
         User findUser = userRepo.findByUsername(sighIn.username())
                 .orElseThrow(() -> CustomResponseException.badCredentials());
 
-        sendEmailService.welcomeMessage(findUser.getEmail());
+        //sendEmailService.welcomeMessage(findUser.getEmail());
 
         String token = jwtHelper.generateToken(findUser);
 
