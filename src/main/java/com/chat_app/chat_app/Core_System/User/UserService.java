@@ -12,6 +12,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.resend.core.exception.ResendException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -87,7 +88,7 @@ public class UserService {
 
             confirmationCodeRepo.save(confirmationCode);
 
-            //sendEmailService.confirmationMessage(user.getEmail(), code);
+            sendEmailService.confirmationMessage(user.getEmail(), code);
 
             return new UserDto.CreateAccountResponse(user.getId());
         } catch (MatchException e) {
@@ -108,7 +109,7 @@ public class UserService {
         User findUser = userRepo.findByUsername(sighIn.username())
                 .orElseThrow(() -> CustomResponseException.badCredentials());
 
-        //sendEmailService.welcomeMessage(findUser.getEmail());
+        sendEmailService.welcomeMessage(findUser.getEmail());
 
         String token = jwtHelper.generateToken(findUser);
 

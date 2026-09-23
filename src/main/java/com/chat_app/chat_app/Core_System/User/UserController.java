@@ -1,6 +1,7 @@
 package com.chat_app.chat_app.Core_System.User;
 
 import com.chat_app.chat_app.Shared.ErrorHandling.GlobalResponse;
+import com.resend.core.exception.ResendException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,13 +32,13 @@ public class UserController {
     }
 
     @PostMapping("/sigh-up")
-    public ResponseEntity<GlobalResponse<UserDto.CreateAccountResponse>> SighUp (@RequestBody @Valid UserDto.CreateUser createUser){
+    public ResponseEntity<GlobalResponse<UserDto.CreateAccountResponse>> SighUp (@RequestBody @Valid UserDto.CreateUser createUser) {
         UserDto.CreateAccountResponse response = userService.createUser(createUser);
         return new ResponseEntity<>(new GlobalResponse<>(response), HttpStatus.OK);
     }
 
     @PostMapping("/sigh-in")
-    public ResponseEntity<GlobalResponse<UserDto.AuthResponse>> sighIn (@RequestBody @Valid UserDto.SighIn sighIn){
+    public ResponseEntity<GlobalResponse<UserDto.AuthResponse>> sighIn (@RequestBody @Valid UserDto.SighIn sighIn) {
         UserDto.AuthResponse response = userService.sighIn(sighIn);
         return new ResponseEntity<>(new GlobalResponse<>(response), HttpStatus.OK);
     }
